@@ -1,6 +1,5 @@
-# Copyright (c) 2017 Joshua Henderson <digitalpeer@digitalpeer.com>
+# Copyright (c) 2023 Vadim Darchuk, Yotal Alter, Michael Palas
 #
-# SPDX-License-Identifier: GPL-3.0
 """
 Wraps a serial port in a thread.
 """

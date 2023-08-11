@@ -1,10 +1,8 @@
-#!/usr/bin/python
 #
 # A simple line based GUI serial terminal.
 #
-# Copyright (c) 2017 Joshua Henderson <digitalpeer@digitalpeer.com>
+# Copyright (c) 2023 Vadim Darchuk, Yotal Alter, Michael Palas
 #
-# SPDX-License-Identifier: GPL-3.0
 
 """TinyCom"""
 import sys
@@ -105,7 +103,7 @@ class SettingsDialog(QDialog):
         self.stopbits.addItem("2", serial.STOPBITS_TWO)
         self.stopbits.setCurrentIndex(self.stopbits.findText("1"))
 
-        self.settings = QtCore.QSettings('tinycom', 'tinycom')
+        self.settings = QtCore.QSettings('uart_term', 'uart_term')
         self.settings.beginGroup("settingsDialog")
         guisave.load(self, self.settings)
         self.settings.endGroup()
@@ -174,7 +172,7 @@ class MainWindow(QMainWindow):
         self.rxtx = QLabel("TX: 0 B  RX: 0 B")
         self.statusBar().addPermanentWidget(self.rxtx)
 
-        self.settings = QtCore.QSettings('tinycom', 'tinycom')
+        self.settings = QtCore.QSettings('uart_term', 'uart_term')
         self.settings.beginGroup("mainWindow")
         guisave.load(self, self.settings)
         self.settings.endGroup()
@@ -396,7 +394,7 @@ class MainWindow(QMainWindow):
     def onAbout(self):
         """About menu clicked."""
         msg = QMessageBox(self)
-        image = QImage(":/icons/32x32/tinycom.png")
+        image = QImage(":/icons/32x32/uart_term.png")
         pixmap = QPixmap(image).scaledToHeight(32,
                                                Qt.SmoothTransformation)
         msg.setIconPixmap(pixmap)
