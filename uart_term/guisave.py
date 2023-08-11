@@ -5,9 +5,11 @@
 #
 
 """Saves and loads Qt GUI Control Settings"""
+
 import sys
 import inspect
-from qt import *
+
+from PyQt5.QtWidgets import QComboBox, QLineEdit, QCheckBox, QRadioButton, QSpinBox, QSlider, QSplitter, QAction
 
 
 def save(ui, settings, controls):

@@ -7,15 +7,19 @@
 """TinyCom"""
 import codecs
 import glob
+import os
 import re
+import sys
 
 import serial
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtWidgets import QDialog, QMainWindow, QLabel, QFileDialog, QListWidgetItem, QMessageBox, QApplication
 from pkg_resources import parse_version
 
 import guisave
-from lineedit import CustomLineEdit
-from qt import *
-from version import __version__
+from utils import load_ui_widget, CustomLineEdit, __version__
 
 # By default, a thread is used to process the serial port. If this is set to
 # False, a timer will poll the serial port at a fixed interval, which can have
@@ -144,9 +148,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
-        load_ui_widget(os.path.join(os.path.dirname(__file__), 'uart_term.ui'),
-                       self,
-                       dict(CustomLineEdit=CustomLineEdit))
+        load_ui_widget(os.path.join(os.path.dirname(__file__), 'uart_term.ui'), self)
         self.serial = None
         self.rx = 0
         self.tx = 0

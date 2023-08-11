@@ -335,7 +335,7 @@
   <customwidget>
    <class>CustomLineEdit</class>
    <extends>QLineEdit</extends>
-   <header>lineedit</header>
+   <header>utils</header>
   </customwidget>
  </customwidgets>
  <resources>

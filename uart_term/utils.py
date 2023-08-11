@@ -1,7 +1,18 @@
 #
+# Utilities library
 # Copyright (c) 2023 Vadim Darchuk, Yotal Alter, Michael Palas
 #
-from qt import *
+from __future__ import unicode_literals
+
+from PyQt5 import uic, QtCore
+from PyQt5.QtWidgets import QLineEdit
+
+
+def load_ui_widget(filename, this, custom=None):
+    """
+    uic.loadUi().
+    """
+    uic.loadUi(filename, this)
 
 
 class CustomLineEdit(QLineEdit):
@@ -15,3 +26,6 @@ class CustomLineEdit(QLineEdit):
             event.accept()
         else:
             super(CustomLineEdit, self).keyPressEvent(event)
+
+
+__version__ = "1.0"

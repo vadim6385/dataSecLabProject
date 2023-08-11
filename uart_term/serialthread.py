@@ -6,8 +6,7 @@ Wraps a serial port in a thread.
 import threading
 
 import serial
-
-from qt import *
+from PyQt5 import QtCore
 
 
 class SerialThread(QtCore.QThread):
@@ -49,7 +48,7 @@ class SerialThread(QtCore.QThread):
                     except Exception as exp:  # pylint: disable=broad-except
                         error = str(exp)
                         break
-        if error != None:
+        if error is not None:
             self.recv_error.emit(error)
         self.alive = True
 
