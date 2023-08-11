@@ -258,7 +258,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="res/tinycom.qrc"/>
+  <include location="res/uart_term.qrc"/>
  </resources>
  <connections>
   <connection>

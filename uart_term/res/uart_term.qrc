@@ -1,5 +1,5 @@
 <RCC>
   <qresource prefix="icons">
-    <file>32x32/tinycom.png</file>
+    <file>32x32/uart_term.png</file>
   </qresource>
 </RCC>

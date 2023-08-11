@@ -1,29 +1,23 @@
 #
-# A simple line based GUI serial terminal.
-#
+# Main Window
 # Copyright (c) 2023 Vadim Darchuk, Yotal Alter, Michael Palas
 #
-
-"""TinyCom"""
 import codecs
 import os
 import re
-import sys
 
 import serial
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QDialog, QMainWindow, QLabel, QFileDialog, QListWidgetItem, QMessageBox, QApplication
+from PyQt5.QtWidgets import QMainWindow, QLabel, QMessageBox, QListWidgetItem, QFileDialog, QDialog
 from pkg_resources import parse_version
 
 import guisave
-from config import __version__, USE_SERIAL_THREAD
+import serialthread
+from config import USE_SERIAL_THREAD, __version__
 from settings import SettingsDialog
 from utils import load_ui_widget, populate_serial_ports, str_to_hex, hex_to_raw, human_size
-
-if USE_SERIAL_THREAD:
-    import serialthread  # pylint: disable=wrong-import-position
 
 
 class MainWindow(QMainWindow):
@@ -322,17 +316,3 @@ class MainWindow(QMainWindow):
                       "echo_input", "log_file", "enable_log", "line_end",
                       "splitter", "output_hex"])
         self.settings.endGroup()
-
-
-def main():
-    """Create main app and window."""
-    app = QApplication(sys.argv)
-    app.setApplicationName("UART Terminal")
-    win = MainWindow(None)
-    win.setWindowTitle("UART Terminal")
-    win.show()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main()

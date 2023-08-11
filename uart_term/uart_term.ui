@@ -14,7 +14,7 @@
    <enum>Qt::DefaultContextMenu</enum>
   </property>
   <property name="windowTitle">
-   <string>TinyCom</string>
+   <string>UART Terminal</string>
   </property>
   <property name="windowIcon">
    <iconset resource="res/tinycom.qrc">
