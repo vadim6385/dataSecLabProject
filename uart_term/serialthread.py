@@ -28,7 +28,7 @@ class SerialThread(QtCore.QThread):
     def stop(self):
         """Stop the thread from running."""
         self.alive = False
-        if hasattr(self.serial, 'cancel_read'):
+        if self.serial.is_open and hasattr(self.serial, 'cancel_read'):
             self.serial.cancel_read()
         self.wait()
 
