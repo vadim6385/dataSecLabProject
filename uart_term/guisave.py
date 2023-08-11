@@ -9,6 +9,7 @@ import sys
 import inspect
 from qt import *
 
+
 def save(ui, settings, controls):
     """Save the state of controls to settings."""
 
@@ -60,6 +61,7 @@ def save(ui, settings, controls):
             if obj.isCheckable():
                 value = obj.isChecked()
                 settings.setValue(name, value)
+
 
 def load(ui, settings):
     """
@@ -146,6 +148,7 @@ def load(ui, settings):
             if value is None:
                 continue
             obj.setChecked(value.lower() in ["true", "1", "yes", "y"])
+
 
 if __name__ == "__main__":
     sys.exit()
