@@ -134,7 +134,7 @@ class MainWindow(QMainWindow):
     """The main window."""
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
-        load_ui_widget(os.path.join(os.path.dirname(__file__), 'tinycom.ui'),
+        load_ui_widget(os.path.join(os.path.dirname(__file__), 'uart_term.ui'),
                        self,
                        dict(CustomLineEdit=CustomLineEdit))
         self.serial = None
