@@ -3,6 +3,7 @@
 #
 from qt import *
 
+
 class CustomLineEdit(QLineEdit):
     """Custom line edit class that handles special key events."""
 

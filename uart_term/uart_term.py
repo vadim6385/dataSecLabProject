@@ -5,16 +5,17 @@
 #
 
 """TinyCom"""
-import sys
+import codecs
 import glob
 import re
-import codecs
+
 import serial
 from pkg_resources import parse_version
-from qt import *
-from version import __version__
+
 import guisave
 from lineedit import CustomLineEdit
+from qt import *
+from version import __version__
 
 # By default, a thread is used to process the serial port. If this is set to
 # False, a timer will poll the serial port at a fixed interval, which can have
@@ -22,7 +23,8 @@ from lineedit import CustomLineEdit
 USE_THREAD = True
 
 if USE_THREAD:
-    import serialthread # pylint: disable=wrong-import-position
+    import serialthread  # pylint: disable=wrong-import-position
+
 
 def populate_serial_ports():
     """Gather all serial ports found on system."""
@@ -45,32 +47,38 @@ def populate_serial_ports():
             pass
     return result
 
+
 def _chunks(text, chunk_size):
     """Chunk text into chunk_size."""
     for i in range(0, len(text), chunk_size):
-        yield text[i:i+chunk_size]
+        yield text[i:i + chunk_size]
+
 
 def str_to_hex(text):
     """Convert text to hex encoded bytes."""
     return ''.join('{:02x}'.format(ord(c)) for c in text)
 
+
 def hex_to_raw(hexstr):
     """Convert a hex encoded string to raw bytes."""
     return ''.join(chr(int(x, 16)) for x in _chunks(hexstr, 2))
+
 
 def human_size(nbytes):
     suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
     if nbytes == 0:
         return '0 B'
     i = 0
-    while nbytes >= 1024 and i < len(suffixes)-1:
+    while nbytes >= 1024 and i < len(suffixes) - 1:
         nbytes /= 1024.
         i += 1
     f = ('%.2f' % nbytes).rstrip('0').rstrip('.')
     return '%s %s' % (f, suffixes[i])
 
+
 class SettingsDialog(QDialog):
     """Settings dialog."""
+
     def __init__(self, parent=None):
         super(SettingsDialog, self).__init__(parent)
         load_ui_widget(os.path.join(os.path.dirname(__file__), 'settings.ui'),
@@ -113,14 +121,14 @@ class SettingsDialog(QDialog):
         Return a dictionary of settings.
         This returns direct attributes of the serial object.
         """
-        return {'port':self.port.currentText(),
-                'baudrate':int(self.baudrate.currentText()),
-                'bytesize':self.bytesize.itemData(self.bytesize.currentIndex()),
-                'parity':self.parity.itemData(self.parity.currentIndex()),
-                'stopbits':self.stopbits.itemData(self.stopbits.currentIndex()),
-                'xonxoff':self.xonxoff.isChecked(),
-                'rtscts':self.rtscts.isChecked(),
-                'dsrdtr':self.dsrdtr.isChecked()}
+        return {'port': self.port.currentText(),
+                'baudrate': int(self.baudrate.currentText()),
+                'bytesize': self.bytesize.itemData(self.bytesize.currentIndex()),
+                'parity': self.parity.itemData(self.parity.currentIndex()),
+                'stopbits': self.stopbits.itemData(self.stopbits.currentIndex()),
+                'xonxoff': self.xonxoff.isChecked(),
+                'rtscts': self.rtscts.isChecked(),
+                'dsrdtr': self.dsrdtr.isChecked()}
 
     def onAccept(self):
         """Accept changes."""
@@ -130,8 +138,10 @@ class SettingsDialog(QDialog):
                       "xonxoff", "rtscts", "dsrdtr"])
         self.settings.endGroup()
 
+
 class MainWindow(QMainWindow):
     """The main window."""
+
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         load_ui_widget(os.path.join(os.path.dirname(__file__), 'uart_term.ui'),
@@ -236,11 +246,11 @@ class MainWindow(QMainWindow):
                                            str(exp))
             else:
                 if parse_version(serial.VERSION) >= parse_version("3.0"):
-                    self.serial.reset_input_buffer() # pylint: disable=no-member
-                    self.serial.reset_output_buffer() # pylint: disable=no-member
+                    self.serial.reset_input_buffer()  # pylint: disable=no-member
+                    self.serial.reset_output_buffer()  # pylint: disable=no-member
                 else:
-                    self.serial.flushInput() # pylint: disable=no-member
-                    self.serial.flushOutput() # pylint: disable=no-member
+                    self.serial.flushInput()  # pylint: disable=no-member
+                    self.serial.flushOutput()  # pylint: disable=no-member
                 self.statusBar().showMessage('Connected to ' + settings['port'] +
                                              ' ' +
                                              str(settings['baudrate']) + ',' +
@@ -260,7 +270,7 @@ class MainWindow(QMainWindow):
             text = self.ansi_escape.sub('', text)
         if self.output_hex.isChecked():
             text = str_to_hex(text)
-            text = ' '.join(a+b for a, b in zip(text[::2], text[1::2]))
+            text = ' '.join(a + b for a, b in zip(text[::2], text[1::2]))
             text = text + ' '
 
         cursor = self.log.textCursor()
@@ -398,7 +408,7 @@ class MainWindow(QMainWindow):
         pixmap = QPixmap(image).scaledToHeight(32,
                                                Qt.SmoothTransformation)
         msg.setIconPixmap(pixmap)
-        msg.setInformativeText("Copyright (c) 2017 Joshua Henderson")
+        msg.setInformativeText("Copyright (c) 2023 Vadim Darchuk, Yotam Alter, Michael Palas")
         msg.setWindowTitle("TinyCom " + __version__)
         with codecs.open(os.path.join(os.path.dirname(__file__), 'LICENSE.txt'),
                          encoding='utf-8') as f:
@@ -428,14 +438,16 @@ class MainWindow(QMainWindow):
                       "splitter", "output_hex"])
         self.settings.endGroup()
 
+
 def main():
     """Create main app and window."""
     app = QApplication(sys.argv)
-    app.setApplicationName("TinyCom")
+    app.setApplicationName("UART Terminal")
     win = MainWindow(None)
-    win.setWindowTitle("TinyCom")
+    win.setWindowTitle("UART Terminal")
     win.show()
     sys.exit(app.exec_())
+
 
 if __name__ == '__main__':
     main()

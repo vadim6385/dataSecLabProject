@@ -4,8 +4,11 @@
 Wraps a serial port in a thread.
 """
 import threading
+
 import serial
+
 from qt import *
+
 
 class SerialThread(QtCore.QThread):
     """Serial thread."""
@@ -20,7 +23,7 @@ class SerialThread(QtCore.QThread):
         self.alive = True
         self._lock = threading.Lock()
 
-    #def __del__(self):
+    # def __del__(self):
     #    self.stop()
 
     def stop(self):
@@ -43,7 +46,7 @@ class SerialThread(QtCore.QThread):
                 if data:
                     try:
                         self.recv.emit(data)
-                    except Exception as exp: # pylint: disable=broad-except
+                    except Exception as exp:  # pylint: disable=broad-except
                         error = str(exp)
                         break
         if error != None:
