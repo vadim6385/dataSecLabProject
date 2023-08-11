@@ -14,11 +14,12 @@ from PyQt5.QtWidgets import QMainWindow, QLabel, QMessageBox, QListWidgetItem, Q
 from pkg_resources import parse_version
 
 import guisave
-import serialthread
 from config import USE_SERIAL_THREAD, __version__
 from settings import SettingsDialog
 from utils import load_ui_widget, populate_serial_ports, str_to_hex, hex_to_raw, human_size
 
+if USE_SERIAL_THREAD:
+    import serialthread
 
 class MainWindow(QMainWindow):
     """The main window."""

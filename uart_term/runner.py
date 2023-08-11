@@ -1,5 +1,5 @@
 #
-# A simple line based GUI serial terminal.
+# A simple line based GUI serial terminal. This is the main runner file
 #
 # Copyright (c) 2023 Vadim Darchuk, Yotal Alter, Michael Palas
 #
@@ -8,11 +8,7 @@ import sys
 
 from PyQt5.QtWidgets import QApplication
 
-from config import USE_SERIAL_THREAD
 from main_window import MainWindow
-
-if USE_SERIAL_THREAD:
-    pass
 
 
 def main():
