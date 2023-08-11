@@ -6,7 +6,6 @@
 
 """TinyCom"""
 import codecs
-import glob
 import os
 import re
 import sys
@@ -19,65 +18,13 @@ from PyQt5.QtWidgets import QDialog, QMainWindow, QLabel, QFileDialog, QListWidg
 from pkg_resources import parse_version
 
 import guisave
-from utils import load_ui_widget, CustomLineEdit, __version__
+from utils import load_ui_widget, populate_serial_ports, str_to_hex, hex_to_raw, human_size
+from config import __version__, USE_SERIAL_THREAD
 
-# By default, a thread is used to process the serial port. If this is set to
-# False, a timer will poll the serial port at a fixed interval, which can have
-# obvious negative side effects of delayed recv.
-USE_THREAD = True
 
-if USE_THREAD:
+
+if USE_SERIAL_THREAD:
     import serialthread  # pylint: disable=wrong-import-position
-
-
-def populate_serial_ports():
-    """Gather all serial ports found on system."""
-    if sys.platform.startswith('win'):
-        ports = ['COM%s' % (i + 1) for i in range(256)]
-    elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
-        ports = glob.glob('/dev/tty[A-Za-z]*')
-    elif sys.platform.startswith('darwin'):
-        ports = glob.glob('/dev/tty.*')
-    else:
-        raise EnvironmentError('Unsupported platform')
-
-    result = []
-    for port in ports:
-        try:
-            ser = serial.Serial(port)
-            ser.close()
-            result.append(port)
-        except (OSError, serial.SerialException):
-            pass
-    return result
-
-
-def _chunks(text, chunk_size):
-    """Chunk text into chunk_size."""
-    for i in range(0, len(text), chunk_size):
-        yield text[i:i + chunk_size]
-
-
-def str_to_hex(text):
-    """Convert text to hex encoded bytes."""
-    return ''.join('{:02x}'.format(ord(c)) for c in text)
-
-
-def hex_to_raw(hexstr):
-    """Convert a hex encoded string to raw bytes."""
-    return ''.join(chr(int(x, 16)) for x in _chunks(hexstr, 2))
-
-
-def human_size(nbytes):
-    suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
-    if nbytes == 0:
-        return '0 B'
-    i = 0
-    while nbytes >= 1024 and i < len(suffixes) - 1:
-        nbytes /= 1024.
-        i += 1
-    f = ('%.2f' % nbytes).rstrip('0').rstrip('.')
-    return '%s %s' % (f, suffixes[i])
 
 
 class SettingsDialog(QDialog):
@@ -198,7 +145,7 @@ class MainWindow(QMainWindow):
             self.serial = serial.Serial(timeout=0.1,
                                         writeTimeout=5.0,
                                         interCharTimeout=1.0)
-        if not USE_THREAD:
+        if not USE_SERIAL_THREAD:
             self.timer = QtCore.QTimer()
             self.timer.timeout.connect(self.doReadData)
         else:
@@ -222,7 +169,7 @@ class MainWindow(QMainWindow):
     def onBtnOpen(self):
         """Open button clicked."""
         if self.serial.isOpen():
-            if not USE_THREAD:
+            if not USE_SERIAL_THREAD:
                 self.timer.stop()
                 self.serial.close()
             else:
@@ -260,7 +207,7 @@ class MainWindow(QMainWindow):
                                              str(settings['bytesize']) + ',' +
                                              str(settings['stopbits']))
                 self.uiConnectedEnable(True)
-                if not USE_THREAD:
+                if not USE_SERIAL_THREAD:
                     self.timer.start(100)
                 else:
                     self.thread.start()
@@ -335,7 +282,7 @@ class MainWindow(QMainWindow):
             return
         try:
             raw = self.encodeInput()
-            if not USE_THREAD:
+            if not USE_SERIAL_THREAD:
                 ret = self.serial.write(raw)
             else:
                 ret = self.thread.write(raw)
@@ -428,7 +375,7 @@ class MainWindow(QMainWindow):
     def closeEvent(self, unused_event):
         """Handle window close event."""
         _ = unused_event
-        if not USE_THREAD:
+        if not USE_SERIAL_THREAD:
             self.timer.stop()
             self.serial.close()
         else:
