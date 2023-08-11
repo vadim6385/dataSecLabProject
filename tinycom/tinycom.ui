@@ -335,7 +335,7 @@
   <customwidget>
    <class>CustomLineEdit</class>
    <extends>QLineEdit</extends>
-   <header>tinycom.lineedit</header>
+   <header>lineedit</header>
   </customwidget>
  </customwidgets>
  <resources>

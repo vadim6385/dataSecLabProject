@@ -99,7 +99,7 @@ def load_ui_widget(filename, this, custom=None):
     uic.loadUi().
     """
     if USE_QT_PY == PYSIDE:
-        from .pyside_dynamic import loadUi
+        from pyside_dynamic import loadUi
         loadUi(filename, this, custom)
     else:
         uic.loadUi(filename, this)

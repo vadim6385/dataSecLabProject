@@ -16,7 +16,6 @@ from pkg_resources import parse_version
 from qt import *
 from version import __version__
 import guisave
-import tinycom_rc # pylint: disable=unused-import
 from lineedit import CustomLineEdit
 
 # By default, a thread is used to process the serial port. If this is set to
