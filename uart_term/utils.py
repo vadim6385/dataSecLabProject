@@ -6,9 +6,10 @@ from __future__ import unicode_literals
 
 from PyQt5 import uic, QtCore
 from PyQt5.QtWidgets import QLineEdit
+from PyQt5.QtCore import Qt
 
 
-def load_ui_widget(filename, this, custom=None):
+def load_ui_widget(filename, this):
     """
     uic.loadUi().
     """
@@ -21,7 +22,7 @@ class CustomLineEdit(QLineEdit):
     key_event = QtCore.pyqtSignal(int, name='key_event')
 
     def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Up or event.key() == QtCore.Qt.Key_Down:
+        if event.key() == Qt.Key_Up or event.key() == Qt.Key_Down:
             self.key_event.emit(event.key())
             event.accept()
         else:

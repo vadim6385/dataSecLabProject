@@ -241,10 +241,10 @@ class MainWindow(QMainWindow):
             try:
                 self.serial.open()
             except serial.SerialException as exp:
-                QtGui.QMessageBox.critical(self, 'Error Opening Serial Port',
+                QMessageBox.critical(self, 'Error Opening Serial Port',
                                            str(exp))
             except (IOError, OSError) as exp:
-                QtGui.QMessageBox.critical(self, 'IO Error Opening Serial Port',
+                QMessageBox.critical(self, 'IO Error Opening Serial Port',
                                            str(exp))
             else:
                 if parse_version(serial.VERSION) >= parse_version("3.0"):
@@ -315,12 +315,12 @@ class MainWindow(QMainWindow):
 
     def onInputKey(self, key):
         """Input line edit key pressed."""
-        if key == QtCore.Qt.Key_Up:
+        if key == Qt.Key_Up:
             if self.history_index > 0:
                 self.history_index -= 1
                 item = self.history.item(self.history_index)
                 self.input.setText(item.text())
-        elif key == QtCore.Qt.Key_Down:
+        elif key == Qt.Key_Down:
             if self.history_index < self.history.count():
                 self.history_index += 1
                 if self.history_index == self.history.count():
@@ -343,10 +343,10 @@ class MainWindow(QMainWindow):
             self.rxtx.setText("TX: " + human_size(self.tx) + "  RX: " +
                               human_size(self.rx))
         except serial.SerialException as exp:
-            QtGui.QMessageBox.critical(self, 'Serial write error', str(exp))
+            QMessageBox.critical(self, 'Serial write error', str(exp))
             return
         except ValueError as exp:
-            QtGui.QMessageBox.critical(self, 'Input Error', str(exp))
+            QMessageBox.critical(self, 'Input Error', str(exp))
             return
 
         if self.echo_input.isChecked():
@@ -365,7 +365,7 @@ class MainWindow(QMainWindow):
         dialog = QFileDialog(self)
         dialog.setWindowTitle('Open File')
         dialog.setNameFilter("All files (*.*)")
-        dialog.setFileMode(QtGui.QFileDialog.AnyFile)
+        dialog.setFileMode(QFileDialog.AnyFile)
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
             self.log_file.setText(filename)
@@ -385,7 +385,7 @@ class MainWindow(QMainWindow):
             try:
                 text = self.serial.read(2048)
             except serial.SerialException as exp:
-                QtGui.QMessageBox.critical(self, 'Serial read error', str(exp))
+                QMessageBox.critical(self, 'Serial read error', str(exp))
             else:
                 self.recv(text)
 
@@ -400,7 +400,7 @@ class MainWindow(QMainWindow):
 
     def onRecvError(self, error):
         """Receive error when reading serial port from signal."""
-        QtGui.QMessageBox.critical(self, 'Serial read error', error)
+        QMessageBox.critical(self, 'Serial read error', error)
         self.onBtnOpen()
 
     def onAbout(self):
@@ -411,12 +411,12 @@ class MainWindow(QMainWindow):
                                                Qt.SmoothTransformation)
         msg.setIconPixmap(pixmap)
         msg.setInformativeText("Copyright (c) 2023 Vadim Darchuk, Yotam Alter, Michael Palas")
-        msg.setWindowTitle("TinyCom " + __version__)
+        msg.setWindowTitle("UART Terminal " + __version__)
         with codecs.open(os.path.join(os.path.dirname(__file__), 'LICENSE.txt'),
                          encoding='utf-8') as f:
             msg.setDetailedText(f.read())
         msg.setText(
-            "<p><b>TinyCom</b> is a simple line based serial terminal GUI"
+            "<p><b>UART Terminal</b> is a simple line based serial terminal GUI"
             " written in Python. This is a tool that's useful for talking to a"
             " variety of serial based hardware that can involve custom protocols"
             " or just a standard command line interface.  It runs on anything"
