@@ -17,8 +17,8 @@
    <string>UART Terminal</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="res/tinycom.qrc">
-    <normaloff>:/icons/32x32/tinycom.png</normaloff>:/icons/32x32/tinycom.png</iconset>
+   <iconset resource="res/uart_term.qrc">
+    <normaloff>:/icons/32x32/uart_term.png</normaloff>:/icons/32x32/uart_term.png</iconset>
   </property>
   <property name="iconSize">
    <size>
@@ -170,7 +170,7 @@
                <string>Log file path.</string>
               </property>
               <property name="text">
-               <string>tinycom.log</string>
+               <string>uart_term.log</string>
               </property>
              </widget>
             </item>
@@ -339,7 +339,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="res/tinycom.qrc"/>
+  <include location="res/uart_term.qrc"/>
  </resources>
  <connections/>
 </ui>
