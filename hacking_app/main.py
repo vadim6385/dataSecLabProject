@@ -10,8 +10,29 @@ class MainWindow(tk.Tk):
         self.configure_grid()
 
     def create_buttons(self):
-        fakeDataBtn = tk.Button(self, text="Create Random Fake Data")
-        
+        btn_font = ("Arial", 12)
+        button_list = []
+        self.fakeDataBtn = tk.Button(self, text="Create Random Fake Data",
+                                     font=btn_font,
+                                     command=self.onFakeDataBtn)
+        button_list.append(self.fakeDataBtn)
+        self.printSiteSrcBtn = tk.Button(self, text="Print Site Source Code and Button Locations",
+                                         font=btn_font,
+                                         command=self.onPrintSiteSrcBtn)
+        button_list.append((self.printSiteSrcBtn))
+        self.encStrBtn = tk.Button(self, text="Encrypt string given hash function",
+                                   font=btn_font,
+                                   command=self.onEncStrBtn)
+        button_list.append(self.encStrBtn)
+        self.caesarEncAttack = tk.Button(self, text="Attack on Caesar Code",
+                                         font=btn_font,
+                                         command=self.onCaesarEncAttack)
+        button_list.append(self.caesarEncAttack)
+        self.vijnerEncAttack = tk.Button(self, text="Attack on Vijner Code",
+                                         font=btn_font,
+                                         command=self.onVijnerEncAttack)
+        button_list.append(self.vijnerEncAttack)
+
 
     def create_widgets(self):
         # Add a label at the top with the program name
@@ -43,6 +64,21 @@ class MainWindow(tk.Tk):
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure(2, weight=1)
+
+    def onFakeDataBtn(self):
+        pass
+
+    def onPrintSiteSrcBtn(self):
+        pass
+
+    def onEncStrBtn(self):
+        pass
+
+    def onCaesarEncAttack(self):
+        pass
+
+    def onVijnerEncAttack(self):
+        pass
 
 
 if __name__ == "__main__":
