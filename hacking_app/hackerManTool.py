@@ -1,5 +1,8 @@
+import hashlib
 import tkinter as tk
 from tkinter import ttk, scrolledtext
+
+from cryptography.fernet import Fernet
 from faker import Faker
 
 
@@ -224,6 +227,69 @@ class VigenereCipherGUI(tk.Frame):
         self.histogram_display.config(state=tk.DISABLED)
 
 
+class EncryptionAppGUI(tk.Frame):
+    def __init__(self, master=None, **kwargs):
+        super().__init__(master, **kwargs)
+        self.grid()
+        self.create_widgets()
+
+    def create_widgets(self):
+        # Label to prompt user input
+        self.input_label = ttk.Label(self, text="Enter the string you want to encrypt:")
+        self.input_label.grid(row=0, column=0, padx=10, pady=5)
+
+        # Entry box to input the text to be encrypted
+        self.input_entry = ttk.Entry(self, width=50)
+        self.input_entry.grid(row=1, column=0, padx=10, pady=5)
+
+        # Label for encryption method choice
+        self.encryption_choice_label = ttk.Label(self, text="Select an encryption method:")
+        self.encryption_choice_label.grid(row=2, column=0, padx=10, pady=5)
+
+        # Dropdown to select an encryption method
+        self.encryption_choice = ttk.Combobox(self, values=["SHA-256", "Fernet"])
+        self.encryption_choice.current(0)
+        self.encryption_choice.grid(row=3, column=0, padx=10, pady=5)
+
+        # ScrolledText widget to display results
+        self.result_text = scrolledtext.ScrolledText(self, width=50, height=10, wrap=tk.WORD)
+        self.result_text.grid(row=4, column=0, padx=10, pady=5)
+
+        # Button to start the encryption process
+        self.encrypt_button = ttk.Button(self, text="Encrypt", command=self.encrypt)
+        self.encrypt_button.grid(row=5, column=0, padx=10, pady=10)
+
+    def sha256_hash(self, text):
+        """Function to encrypt the text using SHA-256."""
+        hashed = hashlib.sha256(text.encode()).hexdigest()
+        return hashed
+
+    def fernet_encrypt(self, text, key):
+        """Function to encrypt the text using Fernet."""
+        fernet = Fernet(key)
+        encrypted = fernet.encrypt(text.encode())
+        return encrypted
+
+    def encrypt(self):
+        """Main function to handle the encryption based on user's choice."""
+        user_input = self.input_entry.get()
+        encryption_method = self.encryption_choice.get()
+        self.result_text.config(state=tk.NORMAL)
+        self.result_text.delete(1.0, tk.END)  # Clear previous results
+
+        if encryption_method == 'SHA-256':
+            encrypted_text = self.sha256_hash(user_input)
+            self.result_text.insert(tk.END, f"SHA-256 Encrypted Message:\n{encrypted_text}\n\n")
+        elif encryption_method == 'Fernet':
+            key = Fernet.generate_key()
+            encrypted_text = self.fernet_encrypt(user_input, key)
+            self.result_text.insert(tk.END, f"Fernet Encrypted Message:\n{encrypted_text.decode()}\n")
+            self.result_text.insert(tk.END, f"Encryption Key:\n{key.decode()}\n\n")
+        else:
+            self.result_text.insert(tk.END, "Invalid encryption method choice.\n\n")
+        self.result_text.config(state=tk.DISABLED)
+
+
 class MainWindow(tk.Tk):
     font_large = ("Arial", 24)
     font_med = ("Arial", 12)
@@ -268,7 +334,7 @@ class MainWindow(tk.Tk):
                                          font=self.font_med,
                                          command=self.onCaesarEncAttack)
         self.button_list.append(self.caesarEncAttack)
-        self.vigenereEncAttack = tk.Button(self, text="Attack on Vijner Code",
+        self.vigenereEncAttack = tk.Button(self, text="Attack on Vegenere Code",
                                            font=self.font_med,
                                            command=self.onVigenereEncAttack)
         self.button_list.append(self.vigenereEncAttack)
@@ -309,7 +375,6 @@ class MainWindow(tk.Tk):
         Open new window helper function
         :param title: Window title
         :param window_class: Class of object to open
-        :return:
         """
         new_window = tk.Toplevel(self)
         new_window.title("{}: {}".format(self.title_str, title))
@@ -323,7 +388,7 @@ class MainWindow(tk.Tk):
         pass
 
     def onEncStrBtn(self):
-        pass
+        self._open_window("Encrypt String", EncryptionAppGUI)
 
     def onCaesarEncAttack(self):
         self._open_window("Caesar", CaesarCipherGUI)
