@@ -7,27 +7,24 @@ class FakeDataGenerator:
     def __init__(self, master):
         self.master = master
         self.master.title("Fake Data Generator")
-
         # Language selection
         self.label = tk.Label(self.master, text="Select a language:")
         self.label.pack(pady=10)
-
         self.languages = ['English', 'Italian', 'Hebrew', 'Japanese']
         self.lang_combo = ttk.Combobox(self.master, values=self.languages, state="readonly")
         self.lang_combo.current(0)
         self.lang_combo.pack(pady=10)
-
         # Button to generate data
         self.btn_generate = tk.Button(self.master, text="Generate Fake Data", command=self.get_fake_data)
         self.btn_generate.pack(pady=10)
-
         # Text box to display results
         self.output_text = tk.Text(self.master, width=50, height=10)
         self.output_text.pack(pady=10, padx=10)
 
     def generate_fake_data(self, language='en'):
+        """Generate fake data using the Faker library based on the selected language."""
         fake = Faker(language)
-
+        # Set the appropriate locale based on the language selected
         if language == 'it':
             fake.locale = 'it_IT'
         elif language == 'he':
@@ -36,7 +33,7 @@ class FakeDataGenerator:
             fake.locale = 'ja_JP'
         else:
             fake.locale = 'en_US'
-
+        # Generate fake data and return as a dictionary
         fake_data = {
             'name': fake.name(),
             'address': fake.address(),
@@ -47,16 +44,19 @@ class FakeDataGenerator:
         return fake_data
 
     def get_fake_data(self):
-        lang = self.lang_combo.get().lower()
+        """Handle the button press, get the selected language, generate data and display in the text box."""
+        lang = self.lang_combo.get().lower()  # Get selected language from the combobox and convert to lowercase
         if lang in ['english', 'italian', 'hebrew', 'japanese']:
-            fake_data = self.generate_fake_data(lang[:2])
-            self.output_text.delete(1.0, tk.END)
-            self.output_text.insert(tk.END, "Generated Fake Data:\n")
+            fake_data = self.generate_fake_data(lang[:2])  # Call the generate_fake_data method
+            self.output_text.delete(1.0, tk.END)  # Clear the text box
+            self.output_text.insert(tk.END, "Generated Fake Data:\n")  # Insert title
             for key, value in fake_data.items():
-                self.output_text.insert(tk.END, f"{key.capitalize()}: {value}\n")
+                self.output_text.insert(tk.END, f"{key.capitalize()}: {value}\n")  # Insert each piece of fake data
         else:
+            # Display an error message in case of invalid selection
             self.output_text.delete(1.0, tk.END)
             self.output_text.insert(tk.END, "Invalid language selection.")
+
 
 class CaesarCipherGUI(tk.Frame):
     def __init__(self, master=None, **kwargs):
@@ -114,7 +114,7 @@ class CaesarCipherGUI(tk.Frame):
         """
         Update the histogram display based on the user's input.
         """
-        encrypted_text = self.text_entry.get("1.0", tk.END).strip()  # Get input from the Text widget
+        encrypted_text = self.text_entry.get().strip()  # Get input from the Text widget
         histogram_text = self.print_shifts_histogram(encrypted_text)  # Generate histogram
         self.histogram_display.config(state=tk.NORMAL)  # Allow editing of the display widget
         self.histogram_display.delete("1.0", tk.END)  # Clear previous histogram
@@ -129,7 +129,8 @@ class CaesarCipherGUI(tk.Frame):
         self.prompt_label.grid(row=0, column=0, pady=10)
 
         # Text widget for user's input
-        self.text_entry = scrolledtext.ScrolledText(self, wrap=tk.WORD, height=5, width=40)
+        self.text_entry = tk.Entry(self, width=40)
+        self.text_entry.bind("<Return>", self.display_histogram)  # Binding "Enter" key
         self.text_entry.grid(row=1, column=0, pady=10)
 
         # Button to trigger the decryption process
@@ -138,6 +139,7 @@ class CaesarCipherGUI(tk.Frame):
 
         # Text widget to display the histogram of possible decryptions
         self.histogram_display = scrolledtext.ScrolledText(self, wrap=tk.WORD, height=15, width=40)
+        self.histogram_display.config(state=tk.DISABLED)
         self.histogram_display.grid(row=3, column=0, pady=10)
         self.histogram_display.config(state=tk.DISABLED)  # Start in a read-only state
 
