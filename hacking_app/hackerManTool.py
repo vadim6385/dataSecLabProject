@@ -1,7 +1,9 @@
 import hashlib
+import re
 import tkinter as tk
 from tkinter import ttk, scrolledtext
 
+import requests
 from cryptography.fernet import Fernet
 from faker import Faker
 
@@ -290,6 +292,83 @@ class EncryptionAppGUI(tk.Frame):
         self.result_text.config(state=tk.DISABLED)
 
 
+class WebContentSearchAppGUI(tk.Frame):
+    def __init__(self, master=None, **kwargs):
+        """Initialize the WebContentSearchAppGUI frame."""
+        super().__init__(master, **kwargs)
+        self.grid()
+        self.create_widgets()
+
+    def create_widgets(self):
+        """Create and position all the widgets in the GUI."""
+
+        # Label prompting the user to input a URL address
+        self.url_label = ttk.Label(self, text="Enter the URL address:")
+        self.url_label.grid(row=0, column=0, padx=10, pady=5)
+
+        # Entry box for the user to type in the URL
+        self.url_entry = ttk.Entry(self, width=50)
+        self.url_entry.grid(row=1, column=0, padx=10, pady=5)
+
+        # Label prompting the user to input a search term
+        self.search_term_label = ttk.Label(self, text="Enter the search term:")
+        self.search_term_label.grid(row=2, column=0, padx=10, pady=5)
+
+        # Entry box for the user to type in the search term
+        self.search_term_entry = ttk.Entry(self, width=50)
+        self.search_term_entry.grid(row=3, column=0, padx=10, pady=5)
+
+        # ScrolledText widget to display search results
+        self.result_text = scrolledtext.ScrolledText(self, width=80, height=20, wrap=tk.WORD)
+        self.result_text.grid(row=4, column=0, padx=10, pady=5)
+
+        # Button that triggers the search_and_print method when clicked
+        self.search_button = ttk.Button(self, text="Search and Print", command=self.search_and_print)
+        self.search_button.grid(row=5, column=0, padx=10, pady=10)
+
+    def search_and_print(self):
+        """Fetch the content of the provided URL, search for the term and display results in the ScrolledText widget."""
+
+        # Retrieve user inputs for URL and search term
+        url = self.url_entry.get()
+        search_term = self.search_term_entry.get()
+
+        try:
+            # Fetch the content from the given URL
+            response = requests.get(url)
+            response.raise_for_status()
+
+            # Search for the provided term in the fetched content
+            content = response.text
+            occurrences = [match.start() for match in re.finditer(search_term, content, re.IGNORECASE)]
+
+            # Make the ScrolledText widget editable to insert new data
+            self.result_text.config(state=tk.NORMAL)
+            # Clear the ScrolledText widget from previous data
+            self.result_text.delete(1.0, tk.END)
+
+            # Display occurrences of the search term in the content
+            if occurrences:
+                self.result_text.insert(tk.END, f"Search Term '{search_term}' Found at Locations:\n")
+                for occurrence in occurrences:
+                    self.result_text.insert(tk.END, f"Location: {occurrence}\n")
+            else:
+                self.result_text.insert(tk.END, f"Search Term '{search_term}' Not Found.\n")
+
+            # Add spacing
+            self.result_text.insert(tk.END, "\n\n")
+
+            # Insert the fetched content and search results into the widget
+            self.result_text.insert(tk.END, f"Source Code of {url}:\n\n{content}\n\n")
+
+        except requests.exceptions.RequestException as e:
+            # Display any error messages
+            self.result_text.insert(tk.END, f"An error occurred: {e}\n")
+
+        # Set the ScrolledText widget to non-editable after inserting data
+        self.result_text.config(state=tk.DISABLED)
+
+
 class MainWindow(tk.Tk):
     font_large = ("Arial", 24)
     font_med = ("Arial", 12)
@@ -385,7 +464,7 @@ class MainWindow(tk.Tk):
         self._open_window("Fake Date", FakeDataGeneratorGUI)
 
     def onPrintSiteSrcBtn(self):
-        pass
+        self._open_window("Website Source", WebContentSearchAppGUI)
 
     def onEncStrBtn(self):
         self._open_window("Encrypt String", EncryptionAppGUI)
