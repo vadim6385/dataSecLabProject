@@ -369,6 +369,72 @@ class WebContentSearchAppGUI(tk.Frame):
         self.result_text.config(state=tk.DISABLED)
 
 
+class MSSPDecryptionAppGUI(tk.Frame):
+    def __init__(self, master=None, **kwargs):
+        """Initialize the MSSPDecryptionAppGUI frame."""
+        super().__init__(master, **kwargs)
+        self.grid()
+        self.create_widgets()
+
+    def create_widgets(self):
+        """Create and position all the widgets in the GUI."""
+
+        # Cyphertext label and entry
+        self.cyphertext_label = tk.Label(self, text="Enter the cyphertext:")
+        self.cyphertext_label.grid(row=0, column=0, pady=10)
+        self.cyphertext_entry = tk.Entry(self, width=80)
+        self.cyphertext_entry.grid(row=1, column=0, padx=10, pady=5)
+
+        # Target sum label and entry
+        self.target_sum_label = tk.Label(self, text="Enter the target sum:")
+        self.target_sum_label.grid(row=2, column=0)
+        self.target_sum_entry = tk.Entry(self)
+        self.target_sum_entry.grid(row=3, column=0, pady=10)
+
+        # Decrypt button
+        self.decrypt_button = tk.Button(self, text="Decrypt", command=self.decrypt_message)
+        self.decrypt_button.grid(row=4, column=0, pady=10)
+
+        # Result text box to display the decrypted message
+        self.result_text = tk.Text(self, height=5, width=40)
+        self.result_text.grid(row=5, column=0, pady=10)
+        self.result_text.config(state=tk.DISABLED)
+
+    def solve_mssp(self, arrays, target_sum):
+        """Solve the MSSP and return the decrypted plaintext."""
+
+        n = len(arrays)
+        m = len(arrays[0])
+
+        decrypted_array = [target_sum // 10 ** ((m - 1) - i) % 10 for i in range(m)]
+        plaintext = "".join(chr(num + 65) for num in
+                            decrypted_array)  # Convert numbers to ASCII characters (with offset 65 for uppercase)
+        return plaintext
+
+    def decrypt_message(self):
+        """Decrypt the message using the MSSP method."""
+
+        # Retrieve cyphertext and target sum
+        cyphertext = self.cyphertext_entry.get()
+        target_sum = int(self.target_sum_entry.get())
+
+        # Assuming that each number in the cyphertext has the same number of digits as the numbers in the hardcoded array.
+        # So, if the hardcoded array contains numbers like 799, 983, etc., each number in the cyphertext will be 3 digits.
+        num_digits = len(str(799))  # 3 in this case
+
+        # Split the continuous cyphertext string into individual numbers
+        arrays = [list(map(int, [cyphertext[i:i + num_digits] for i in range(0, len(cyphertext), num_digits)]))]
+
+        # Decrypt the message
+        decrypted_message = self.solve_mssp(arrays, target_sum)
+
+        # Update result text box with decrypted message
+        self.result_text.config(state=tk.NORMAL)
+        self.result_text.delete("1.0", tk.END)
+        self.result_text.insert(tk.END, f"Decrypted Message:\n{decrypted_message}\n")
+        self.result_text.config(state=tk.DISABLED)
+
+
 class MainWindow(tk.Tk):
     font_large = ("Arial", 24)
     font_med = ("Arial", 12)
@@ -378,7 +444,7 @@ class MainWindow(tk.Tk):
         super().__init__()
         self.new_window_fd = None
         self.ddosAttackBtn = None
-        self.msspEncryptBtn = None
+        self.msspDecryptBtn = None
         self.vigenereEncAttack = None
         self.caesarEncAttack = None
         self.encStrBtn = None
@@ -401,7 +467,7 @@ class MainWindow(tk.Tk):
                                      font=self.font_med,
                                      command=self.onFakeDataBtn)
         self.button_list.append(self.fakeDataBtn)
-        self.printSiteSrcBtn = tk.Button(self, text="Print Site Source Code and Button Locations",
+        self.printSiteSrcBtn = tk.Button(self, text="Print Site Source Code and text Locations",
                                          font=self.font_med,
                                          command=self.onPrintSiteSrcBtn)
         self.button_list.append(self.printSiteSrcBtn)
@@ -417,10 +483,10 @@ class MainWindow(tk.Tk):
                                            font=self.font_med,
                                            command=self.onVigenereEncAttack)
         self.button_list.append(self.vigenereEncAttack)
-        self.msspEncryptBtn = tk.Button(self, text="MSSP Encryption",
+        self.msspDecryptBtn = tk.Button(self, text="MSSP Decryption",
                                         font=self.font_med,
-                                        command=self.onMsspEncryptBtn)
-        self.button_list.append(self.msspEncryptBtn)
+                                        command=self.onMsspDecryptBtn)
+        self.button_list.append(self.msspDecryptBtn)
         self.ddosAttackBtn = tk.Button(self, text="DDOS attack",
                                        font=self.font_med,
                                        command=self.onDdosAttackBtn)
@@ -475,8 +541,8 @@ class MainWindow(tk.Tk):
     def onVigenereEncAttack(self):
         self._open_window("Vigenere", VigenereCipherGUI)
 
-    def onMsspEncryptBtn(self):
-        pass
+    def onMsspDecryptBtn(self):
+        self._open_window("MSSP Decrypt", MSSPDecryptionAppGUI)
 
     def onDdosAttackBtn(self):
         pass
