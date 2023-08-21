@@ -6,7 +6,6 @@ from faker import Faker
 class FakeDataGenerator:
     def __init__(self, master):
         self.master = master
-        self.master.title("Fake Data Generator")
         # Language selection
         self.label = tk.Label(self.master, text="Select a language:")
         self.label.pack(pady=10)
@@ -144,6 +143,79 @@ class CaesarCipherGUI(tk.Frame):
         self.histogram_display.config(state=tk.DISABLED)  # Start in a read-only state
 
 
+class VigenereCipherGUI(tk.Frame):
+    def __init__(self, master=None, **kwargs):
+        super().__init__(master, **kwargs)
+        self.grid()
+        self.create_widgets()
+
+    # Encrypts given text using Vigenère cipher
+    def encrypt_vigenere(self, text, key, jump):
+        result = ""
+        for i in range(len(text)):
+            char = text[i]
+            # Encrypt uppercase characters
+            if char.isupper():
+                result += chr((ord(char) + key + (jump * i) - 65) % 26 + 65)
+            # Encrypt lowercase characters
+            else:
+                result += chr((ord(char) + key + (jump * i) - 97) % 26 + 97)
+        return result
+
+    # Decrypts given text using Vigenère cipher
+    def decrypt_vigenere(self, text, key, jump):
+        result = ""
+        for i in range(len(text)):
+            char = text[i]
+            # Decrypt uppercase characters
+            if char.isupper():
+                result += chr((ord(char) - key - (jump * i) - 65) % 26 + 65)
+            # Decrypt lowercase characters
+            else:
+                result += chr((ord(char) - key - (jump * i) - 97) % 26 + 97)
+        return result
+
+    # Function that is triggered upon pressing "Decode" button or "Enter" key
+    def display_histogram(self, event=None):
+        # Retrieve the encrypted text from the input box
+        encrypted_text = self.text_entry.get().strip()
+        # Generate the histogram of decrypted possibilities
+        histogram_text = self.print_shifts_histogram(encrypted_text)
+
+        # Clear the scrolled text widget and display the histogram
+        self.histogram_display.config(state=tk.NORMAL)
+        self.histogram_display.delete("1.0", tk.END)
+        self.histogram_display.insert(tk.END, histogram_text)
+        self.histogram_display.config(state=tk.DISABLED)
+
+    # Generates a histogram of decrypted possibilities for all key and jump values
+    def print_shifts_histogram(self, encrypted_text):
+        result = ""
+        # Assuming the range for key and jump values to be [0, 25]
+        for key in range(26):
+            for jump in range(26):
+                decrypted = self.decrypt_vigenere(encrypted_text, key, jump)
+                result += f"Key: {key}, Jump: {jump} -> {decrypted}\n"
+        return result
+
+    # Creates and places all the widgets onto the GUI
+    def create_widgets(self):
+        self.prompt_label = tk.Label(self, text="Enter encrypted text:")
+        self.prompt_label.grid(row=0, column=0, pady=10)
+
+        self.text_entry = tk.Entry(self, width=40)
+        self.text_entry.grid(row=1, column=0, pady=10)
+        # Bind "Enter" key to the function
+        self.text_entry.bind("<Return>", self.display_histogram)
+
+        self.decode_button = tk.Button(self, text="Decode", command=self.display_histogram)
+        self.decode_button.grid(row=2, column=0, pady=10)
+
+        self.histogram_display = scrolledtext.ScrolledText(self, wrap=tk.WORD, height=15, width=40)
+        self.histogram_display.grid(row=3, column=0, pady=10)
+        self.histogram_display.config(state=tk.DISABLED)
+
+
 class MainWindow(tk.Tk):
     font_large = ("Arial", 24)
     font_med = ("Arial", 12)
@@ -154,13 +226,14 @@ class MainWindow(tk.Tk):
         self.new_window_fd = None
         self.ddosAttackBtn = None
         self.msspEncryptBtn = None
-        self.vijnerEncAttack = None
+        self.vigenereEncAttack = None
         self.caesarEncAttack = None
         self.encStrBtn = None
         self.printSiteSrcBtn = None
         self.button_list = None
         self.fakeDataBtn = None
-        self.title("HackerManTool")
+        self.title_str = "HackerManTool"
+        self.title(self.title_str)
         self.create_widgets()
         self.configure_grid()
         self.resizable(False, False)
@@ -187,10 +260,10 @@ class MainWindow(tk.Tk):
                                          font=self.font_med,
                                          command=self.onCaesarEncAttack)
         self.button_list.append(self.caesarEncAttack)
-        self.vijnerEncAttack = tk.Button(self, text="Attack on Vijner Code",
-                                         font=self.font_med,
-                                         command=self.onVijnerEncAttack)
-        self.button_list.append(self.vijnerEncAttack)
+        self.vigenereEncAttack = tk.Button(self, text="Attack on Vijner Code",
+                                           font=self.font_med,
+                                           command=self.onVigenereEncAttack)
+        self.button_list.append(self.vigenereEncAttack)
         self.msspEncryptBtn = tk.Button(self, text="MSSP Encryption",
                                         font=self.font_med,
                                         command=self.onMsspEncryptBtn)
@@ -223,8 +296,21 @@ class MainWindow(tk.Tk):
         for i in range(3):
             self.grid_columnconfigure(i, weight=1)
 
+    def _open_window(self, title, window_class):
+        """
+        Open new window helper function
+        :param title: Window title
+        :param window_class: Class of object to open
+        :return:
+        """
+        new_window = tk.Toplevel(self)
+        new_window.title("{}: {}".format(self.title_str, title))
+        new_window.resizable(False, False)
+        window_class(new_window)
+
     def onFakeDataBtn(self):
         self.new_window_fd = tk.Toplevel(self)
+        self.new_window_fd.title("{} - Generate Fake Data".format(self.title_str))
         self.new_window_fd.resizable(False, False)
         FakeDataGenerator(self.new_window_fd)
 
@@ -235,12 +321,10 @@ class MainWindow(tk.Tk):
         pass
 
     def onCaesarEncAttack(self):
-        self.new_window_ca = tk.Toplevel(self)
-        self.new_window_ca.resizable(False, False)
-        CaesarCipherGUI(self.new_window_ca)
+        self._open_window("Caesar", CaesarCipherGUI)
 
-    def onVijnerEncAttack(self):
-        pass
+    def onVigenereEncAttack(self):
+        self._open_window("Vigenere", VigenereCipherGUI)
 
     def onMsspEncryptBtn(self):
         pass
