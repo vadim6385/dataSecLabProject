@@ -110,7 +110,7 @@ class CaesarCipherGUI(tk.Frame):
             result += f"Shift {shift}: {decrypted}\n"
         return result
 
-    def display_histogram(self):
+    def display_histogram(self, event=None):
         """
         Update the histogram display based on the user's input.
         """
