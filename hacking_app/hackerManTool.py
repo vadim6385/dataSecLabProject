@@ -3,58 +3,66 @@ from tkinter import ttk, scrolledtext
 from faker import Faker
 
 
-class FakeDataGenerator:
-    def __init__(self, master):
-        self.master = master
-        # Language selection
-        self.label = tk.Label(self.master, text="Select a language:")
-        self.label.pack(pady=10)
-        self.languages = ['English', 'Italian', 'Hebrew', 'Japanese']
-        self.lang_combo = ttk.Combobox(self.master, values=self.languages, state="readonly")
-        self.lang_combo.current(0)
-        self.lang_combo.pack(pady=10)
-        # Button to generate data
-        self.btn_generate = tk.Button(self.master, text="Generate Fake Data", command=self.get_fake_data)
-        self.btn_generate.pack(pady=10)
-        # Text box to display results
-        self.output_text = tk.Text(self.master, width=50, height=10)
-        self.output_text.pack(pady=10, padx=10)
+class FakeDataGeneratorGUI(tk.Frame):
+    def __init__(self, master=None, **kwargs):
+        super().__init__(master, **kwargs)
+        self.grid()
+        self.create_widgets()
 
-    def generate_fake_data(self, language='en'):
+    def create_widgets(self):
+        # Label prompting the user to select a language
+        self.label = tk.Label(self, text="Select a language:")
+        self.label.grid(row=0, column=0, pady=10, padx=10)
+
+        # Dropdown combobox to select a language
+        self.languages = ['English', 'Italian', 'Hebrew', 'Japanese']
+        self.lang_combo = ttk.Combobox(self, values=self.languages, state="readonly")
+        self.lang_combo.current(0)
+        self.lang_combo.grid(row=1, column=0, pady=10, padx=10)
+
+        # Button to trigger fake data generation
+        self.btn_generate = tk.Button(self, text="Generate Fake Data", command=self.get_fake_data)
+        self.btn_generate.grid(row=2, column=0, pady=10)
+
+        # Text box to display the generated fake data
+        self.output_text = tk.Text(self, width=50, height=10)
+        self.output_text.grid(row=3, column=0, pady=10, padx=10)
+
+    def generate_fake_data(self, language='english'):
         """Generate fake data using the Faker library based on the selected language."""
-        fake = Faker(language)
-        # Set the appropriate locale based on the language selected
-        if language == 'it':
-            fake.locale = 'it_IT'
-        elif language == 'he':
-            fake.locale = 'he_IL'
-        elif language == 'ja':
-            fake.locale = 'ja_JP'
-        else:
-            fake.locale = 'en_US'
-        # Generate fake data and return as a dictionary
+        # Mapping selected language to appropriate locale
+        locale_mapping = {
+            'english': 'en_US',
+            'italian': 'it_IT',
+            'hebrew': 'he_IL',
+            'japanese': 'ja_JP'
+        }
+        fake_locale = locale_mapping.get(language, 'en_US')
+        fake = Faker(fake_locale)
+
+        # Generate and return fake data as a dictionary
         fake_data = {
             'name': fake.name(),
             'address': fake.address(),
             'email': fake.email(),
             'phone_number': fake.phone_number(),
         }
-
         return fake_data
 
     def get_fake_data(self):
-        """Handle the button press, get the selected language, generate data and display in the text box."""
-        lang = self.lang_combo.get().lower()  # Get selected language from the combobox and convert to lowercase
+        """Handle button press, get the selected language, generate data and display in the text box."""
+        lang = self.lang_combo.get().lower()
+        self.output_text.config(state=tk.NORMAL)
         if lang in ['english', 'italian', 'hebrew', 'japanese']:
-            fake_data = self.generate_fake_data(lang[:2])  # Call the generate_fake_data method
-            self.output_text.delete(1.0, tk.END)  # Clear the text box
-            self.output_text.insert(tk.END, "Generated Fake Data:\n")  # Insert title
+            fake_data = self.generate_fake_data(lang)
+            self.output_text.delete(1.0, tk.END)
+            self.output_text.insert(tk.END, "Generated Fake Data:\n")
             for key, value in fake_data.items():
-                self.output_text.insert(tk.END, f"{key.capitalize()}: {value}\n")  # Insert each piece of fake data
+                self.output_text.insert(tk.END, f"{key.capitalize()}: {value}\n")
         else:
-            # Display an error message in case of invalid selection
             self.output_text.delete(1.0, tk.END)
             self.output_text.insert(tk.END, "Invalid language selection.")
+        self.output_text.config(state=tk.DISABLED)
 
 
 class CaesarCipherGUI(tk.Frame):
@@ -309,10 +317,7 @@ class MainWindow(tk.Tk):
         window_class(new_window)
 
     def onFakeDataBtn(self):
-        self.new_window_fd = tk.Toplevel(self)
-        self.new_window_fd.title("{} - Generate Fake Data".format(self.title_str))
-        self.new_window_fd.resizable(False, False)
-        FakeDataGenerator(self.new_window_fd)
+        self._open_window("Fake Date", FakeDataGeneratorGUI)
 
     def onPrintSiteSrcBtn(self):
         pass
