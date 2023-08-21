@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, scrolledtext
 from faker import Faker
 
 
@@ -58,6 +58,89 @@ class FakeDataGenerator:
             self.output_text.delete(1.0, tk.END)
             self.output_text.insert(tk.END, "Invalid language selection.")
 
+class CaesarCipherGUI(tk.Frame):
+    def __init__(self, master=None, **kwargs):
+        """Constructor for the CaesarCipherGUI class."""
+        super().__init__(master, **kwargs)
+        self.histogram_display = None
+        self.text_entry = None
+        self.prompt_label = None
+        self.decode_button = None
+        self.master = master
+        self.grid()
+        self.create_widgets()
+
+    def caesar_cipher(self, text, shift):
+        """
+        Implement the Caesar Cipher algorithm.
+
+        :param text: The input text to be encrypted/decrypted.
+        :param shift: The number of positions to shift each character.
+        :return: Transformed text after applying Caesar Cipher.
+        """
+        result = ""
+        for char in text:
+            if char.isalpha():
+                shifted = ord(char) + shift
+                if char.islower():
+                    if shifted > ord('z'):
+                        shifted -= 26
+                    elif shifted < ord('a'):
+                        shifted += 26
+                elif char.isupper():
+                    if shifted > ord('Z'):
+                        shifted -= 26
+                    elif shifted < ord('A'):
+                        shifted += 26
+                result += chr(shifted)
+            else:
+                result += char
+        return result
+
+    def print_shifts_histogram(self, encrypted_text):
+        """
+        Generate histogram for all possible Caesar Cipher shifts.
+
+        :param encrypted_text: The encrypted text.
+        :return: A string representation of all possible decryptions.
+        """
+        result = ""
+        for shift in range(26):
+            decrypted = self.caesar_cipher(encrypted_text, -shift)
+            result += f"Shift {shift}: {decrypted}\n"
+        return result
+
+    def display_histogram(self):
+        """
+        Update the histogram display based on the user's input.
+        """
+        encrypted_text = self.text_entry.get("1.0", tk.END).strip()  # Get input from the Text widget
+        histogram_text = self.print_shifts_histogram(encrypted_text)  # Generate histogram
+        self.histogram_display.config(state=tk.NORMAL)  # Allow editing of the display widget
+        self.histogram_display.delete("1.0", tk.END)  # Clear previous histogram
+        self.histogram_display.insert(tk.END, histogram_text)  # Insert the new histogram
+        self.histogram_display.config(state=tk.DISABLED)  # Disable editing after insertion
+
+    def create_widgets(self):
+        """Setup and initialize all the widgets used in the GUI."""
+
+        # Label to prompt the user
+        self.prompt_label = tk.Label(self, text="Enter encrypted text:")
+        self.prompt_label.grid(row=0, column=0, pady=10)
+
+        # Text widget for user's input
+        self.text_entry = scrolledtext.ScrolledText(self, wrap=tk.WORD, height=5, width=40)
+        self.text_entry.grid(row=1, column=0, pady=10)
+
+        # Button to trigger the decryption process
+        self.decode_button = tk.Button(self, text="Decode", command=self.display_histogram)
+        self.decode_button.grid(row=2, column=0, pady=10)
+
+        # Text widget to display the histogram of possible decryptions
+        self.histogram_display = scrolledtext.ScrolledText(self, wrap=tk.WORD, height=15, width=40)
+        self.histogram_display.grid(row=3, column=0, pady=10)
+        self.histogram_display.config(state=tk.DISABLED)  # Start in a read-only state
+
 
 class MainWindow(tk.Tk):
     font_large = ("Arial", 24)
@@ -66,6 +149,7 @@ class MainWindow(tk.Tk):
 
     def __init__(self):
         super().__init__()
+        self.new_window_fd = None
         self.ddosAttackBtn = None
         self.msspEncryptBtn = None
         self.vijnerEncAttack = None
@@ -92,7 +176,7 @@ class MainWindow(tk.Tk):
         self.printSiteSrcBtn = tk.Button(self, text="Print Site Source Code and Button Locations",
                                          font=self.font_med,
                                          command=self.onPrintSiteSrcBtn)
-        self.button_list.append((self.printSiteSrcBtn))
+        self.button_list.append(self.printSiteSrcBtn)
         self.encStrBtn = tk.Button(self, text="Encrypt string given hash function",
                                    font=self.font_med,
                                    command=self.onEncStrBtn)
@@ -139,6 +223,7 @@ class MainWindow(tk.Tk):
 
     def onFakeDataBtn(self):
         self.new_window_fd = tk.Toplevel(self)
+        self.new_window_fd.resizable(False, False)
         FakeDataGenerator(self.new_window_fd)
 
     def onPrintSiteSrcBtn(self):
@@ -148,7 +233,9 @@ class MainWindow(tk.Tk):
         pass
 
     def onCaesarEncAttack(self):
-        pass
+        self.new_window_ca = tk.Toplevel(self)
+        self.new_window_ca.resizable(False, False)
+        CaesarCipherGUI(self.new_window_ca)
 
     def onVijnerEncAttack(self):
         pass
