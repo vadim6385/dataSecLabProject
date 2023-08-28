@@ -1,7 +1,2 @@
-pip==23.2.1
-PyQt5-Qt5==5.15.2
-PyQt5-sip==12.12.2
-PyQt5==5.15.9
-pyserial==3.5
-setuptools==68.0.0
-wheel==0.41.1
+PyQt5~=5.15.9
+pyserial~=3.5
