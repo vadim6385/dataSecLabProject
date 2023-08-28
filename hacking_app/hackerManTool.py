@@ -371,70 +371,116 @@ class WebContentSearchAppGUI(tk.Frame):
         self.result_text.config(state=tk.DISABLED)
 
 
-class MSSPDecryptionAppGUI(tk.Frame):
-    def __init__(self, master=None, **kwargs):
-        """Initialize the MSSPDecryptionAppGUI frame."""
-        super().__init__(master, **kwargs)
-        self.grid()
+class MSSPDecryptorGUI(tk.Frame):
+    def __init__(self, master=None):
+        # Initialize the parent class
+        super().__init__(master)
+        self.master = master
+        # Attach this frame to its master
+        self.pack()
+        # Create GUI elements
         self.create_widgets()
 
     def create_widgets(self):
-        """Create and position all the widgets in the GUI."""
-
-        # Cyphertext label and entry
-        self.cyphertext_label = tk.Label(self, text="Enter the cyphertext:")
-        self.cyphertext_label.grid(row=0, column=0, pady=10)
-        self.cyphertext_entry = tk.Entry(self, width=80)
-        self.cyphertext_entry.grid(row=1, column=0, padx=10, pady=5)
-
-        # Target sum label and entry
-        self.target_sum_label = tk.Label(self, text="Enter the target sum:")
-        self.target_sum_label.grid(row=2, column=0)
-        self.target_sum_entry = tk.Entry(self)
-        self.target_sum_entry.grid(row=3, column=0, pady=10)
-
-        # Decrypt button
-        self.decrypt_button = tk.Button(self, text="Decrypt", command=self.decrypt_message)
-        self.decrypt_button.grid(row=4, column=0, pady=10)
-
-        # Result text box to display the decrypted message
+        # GUI element for inputting the ciphertext
+        self.ciphertext_label = tk.Label(self, text="Enter the ciphertext:")
+        self.ciphertext_label.grid(row=0, column=0, padx=10, pady=10)
+        self.ciphertext_entry = tk.Entry(self, width=40)
+        self.ciphertext_entry.grid(row=0, column=1, padx=10, pady=10)
+        # GUI element for inputting n (optional)
+        self.n_label = tk.Label(self, text="Enter n (optional):")
+        self.n_label.grid(row=1, column=0, pady=10)
+        self.n_entry = tk.Entry(self)
+        self.n_entry.grid(row=1, column=1, pady=10)
+        # GUI element for inputting m (optional)
+        self.m_label = tk.Label(self, text="Enter m (optional):")
+        self.m_label.grid(row=2, column=0, pady=10)
+        self.m_entry = tk.Entry(self)
+        self.m_entry.grid(row=2, column=1, pady=10)
+        # GUI element for inputting d (optional)
+        self.d_label = tk.Label(self, text="Enter d (optional):")
+        self.d_label.grid(row=3, column=0, pady=10)
+        self.d_entry = tk.Entry(self)
+        self.d_entry.grid(row=3, column=1, pady=10)
+        # GUI button that triggers the decryption logic
+        self.decrypt_button = tk.Button(self, text="Decrypt", command=self.decrypt)
+        self.decrypt_button.grid(row=4, columnspan=2, pady=10)
+        # Text box to display the results or any error messages
         self.result_text = tk.Text(self, height=5, width=40)
-        self.result_text.grid(row=5, column=0, pady=10)
+        self.result_text.grid(row=5, columnspan=2, pady=10)
         self.result_text.config(state=tk.DISABLED)
 
-    def solve_mssp(self, arrays, target_sum):
-        """Solve the MSSP and return the decrypted plaintext."""
+    def decrypt(self):
+        # Fetch the entered values
+        ciphertext = self.ciphertext_entry.get()
+        n = self.n_entry.get()
+        m = self.m_entry.get()
+        d = self.d_entry.get()
+        # Convert to integers if values are not empty, otherwise set to None
+        n = int(n) if n else None
+        m = int(m) if m else None
+        d = int(d) if d else None
+        # Validation to ensure at least two parameters are provided
+        if (n is None and (m is None or d is None)) or \
+                (m is None and (n is None or d is None)) or \
+                (d is None and (n is None or m is None)):
+            self.result_text.config(state=tk.NORMAL)
+            self.result_text.delete("1.0", tk.END)
+            self.result_text.insert(tk.END, f"Error: At least two of n, m, and d must be provided.\n")
+            self.result_text.config(state=tk.DISABLED)
+            return
+        try:
+            # Filter out non-digit characters from the ciphertext
+            self.ciphertext = ''.join(char for char in ciphertext if char.isdigit())
+            self.n = n
+            self.m = m
+            self.d = d
+            # Decrypt the ciphertext
+            common_sum = self._decrypt()
+            # Display the result in the text box
+            self.result_text.config(state=tk.NORMAL)
+            self.result_text.delete("1.0", tk.END)
+            self.result_text.insert(tk.END, f"Common Sum:\n{common_sum}\n")
+            self.result_text.config(state=tk.DISABLED)
+        except ValueError as e:
+            # Display any error messages in the text box
+            self.result_text.config(state=tk.NORMAL)
+            self.result_text.delete("1.0", tk.END)
+            self.result_text.insert(tk.END, f"Error:\n{str(e)}\n")
+            self.result_text.config(state=tk.DISABLED)
 
-        n = len(arrays)
-        m = len(arrays[0])
+    def _decrypt(self):
+        # Calculate any missing parameter if needed
+        if self.n is None:
+            self.n = len(self.ciphertext) // (self.m * self.d)
+        elif self.m is None:
+            self.m = len(self.ciphertext) // (self.n * self.d)
+        else:
+            self.d = len(self.ciphertext) // (self.n * self.m)
+        # Break the ciphertext into sets
+        sets = [self.ciphertext[i:i + self.d * self.m] for i in range(0, len(self.ciphertext), self.d * self.m)]
+        if len(sets) != self.n:
+            raise ValueError("Ciphertext cannot be evenly divided into n sets of m items of d digits")
+        # Convert sets into lists of integers
+        sets = [[int(set[i:i + self.d]) for i in range(0, len(set), self.d)] for set in sets]
+        # Find the common sum among all the sets
+        common_sum = self.find_common_sum(sets)
+        return common_sum
 
-        decrypted_array = [target_sum // 10 ** ((m - 1) - i) % 10 for i in range(m)]
-        plaintext = "".join(chr(num + 65) for num in
-                            decrypted_array)  # Convert numbers to ASCII characters (with offset 65 for uppercase)
-        return plaintext
+    def find_common_sum(self, sets):
+        # Iterate through all possible sums to find the common sum
+        for target_sum in range(sum(sets[0]), -1, -1):
+            if all(self.calc_subset_sum(set, target_sum) for set in sets):
+                return target_sum
+        raise ValueError("No common sum found in all sets")
 
-    def decrypt_message(self):
-        """Decrypt the message using the MSSP method."""
-
-        # Retrieve cyphertext and target sum
-        cyphertext = self.cyphertext_entry.get()
-        target_sum = int(self.target_sum_entry.get())
-
-        # Assuming that each number in the cyphertext has the same number of digits as the numbers in the hardcoded array.
-        # So, if the hardcoded array contains numbers like 799, 983, etc., each number in the cyphertext will be 3 digits.
-        num_digits = len(str(799))  # 3 in this case
-
-        # Split the continuous cyphertext string into individual numbers
-        arrays = [list(map(int, [cyphertext[i:i + num_digits] for i in range(0, len(cyphertext), num_digits)]))]
-
-        # Decrypt the message
-        decrypted_message = self.solve_mssp(arrays, target_sum)
-
-        # Update result text box with decrypted message
-        self.result_text.config(state=tk.NORMAL)
-        self.result_text.delete("1.0", tk.END)
-        self.result_text.insert(tk.END, f"Decrypted Message:\n{decrypted_message}\n")
-        self.result_text.config(state=tk.DISABLED)
+    def calc_subset_sum(self, nums, sum):
+        # Helper function to find if a subset sum exists for a given sum
+        if sum == 0:
+            return True
+        if not nums:
+            return False
+        return self.calc_subset_sum(nums[1:], sum - nums[0]) or self.calc_subset_sum(nums[1:], sum)
 
 
 class DDOSToolGUI(tk.Frame):
@@ -659,7 +705,7 @@ class MainWindow(tk.Tk):
         self._open_window("Vigenere", VigenereCipherGUI)
 
     def onMsspDecryptBtn(self):
-        self._open_window("MSSP Decrypt", MSSPDecryptionAppGUI)
+        self._open_window("MSSP Decrypt", MSSPDecryptorGUI)
 
     def onDdosAttackBtn(self):
         self._open_window("DDOS Attack", DDOSToolGUI)
