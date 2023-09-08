@@ -1,3 +1,12 @@
+"""
+HackerManTool, inspired by HackerMan
+https://www.youtube.com/watch?v=KEkrWRHCDQU
+
+Creators:
+Vadim Darchuk: 316920974
+Yotam Alter: 302955679
+Michael Palas: 312370935
+"""
 import hashlib
 import re
 import socket
@@ -11,6 +20,10 @@ from faker import Faker
 
 
 class FakeDataGeneratorGUI(tk.Frame):
+    """
+    Fake Data Generator
+    """
+
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
         self.grid()
@@ -73,6 +86,10 @@ class FakeDataGeneratorGUI(tk.Frame):
 
 
 class CaesarCipherGUI(tk.Frame):
+    """
+    Attack on Caesar Cipher
+    """
+
     def __init__(self, master=None, **kwargs):
         """Constructor for the CaesarCipherGUI class."""
         super().__init__(master, **kwargs)
@@ -159,6 +176,10 @@ class CaesarCipherGUI(tk.Frame):
 
 
 class VigenereCipherGUI(tk.Frame):
+    """
+    Attack on Vegenere Cipher
+    """
+
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
         self.grid()
@@ -232,6 +253,10 @@ class VigenereCipherGUI(tk.Frame):
 
 
 class EncryptionAppGUI(tk.Frame):
+    """
+    String Encrypt using different algorithms
+    """
+
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
         self.grid()
@@ -295,6 +320,10 @@ class EncryptionAppGUI(tk.Frame):
 
 
 class WebContentSearchAppGUI(tk.Frame):
+    """
+    Scrape web content
+    """
+
     def __init__(self, master=None, **kwargs):
         """Initialize the WebContentSearchAppGUI frame."""
         super().__init__(master, **kwargs)
@@ -372,7 +401,10 @@ class WebContentSearchAppGUI(tk.Frame):
 
 
 class MSSPDecryptorGUI(tk.Frame):
-    # MSSP Decryptor
+    """
+    MSSP Decryptor
+    """
+
     def __init__(self, master=None):
         # Initialize the parent class
         super().__init__(master)
@@ -485,6 +517,9 @@ class MSSPDecryptorGUI(tk.Frame):
 
 
 class DDOSToolGUI(tk.Frame):
+    """
+    Perform DDOS attack
+    """
 
     class myThread(threading.Thread):
         # Nested class for threading
